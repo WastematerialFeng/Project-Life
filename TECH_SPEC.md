@@ -144,6 +144,12 @@ feat(backend): 添加用户属性系统 API
 | 2024-12-24 02:00 | 创建 | TECH_SPEC.md | 技术规范文档 |
 | 2024-12-24 02:00 | 创建 | claude.md | AI 开发上下文 |
 | 2024-12-24 02:00 | 初始化 | .git | Git 仓库初始化 |
+| 2024-12-24 02:08 | 创建 | backend/ | 后端项目结构 |
+| 2024-12-24 02:08 | 创建 | backend/main.py | FastAPI 主应用 |
+| 2024-12-24 02:08 | 创建 | backend/models.py | SQLAlchemy 数据模型 |
+| 2024-12-24 02:08 | 创建 | backend/schemas.py | Pydantic 数据模式 |
+| 2024-12-24 02:08 | 创建 | backend/database.py | 数据库配置 |
+| 2024-12-24 02:08 | 创建 | backend/requirements.txt | Python 依赖 |
 
 ---
 

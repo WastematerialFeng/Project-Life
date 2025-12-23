@@ -23,7 +23,7 @@
 - [x] Git 仓库初始化
 - [x] 技术规范文档创建
 - [x] claude.md 上下文文档创建
-- [ ] 后端原型搭建 (FastAPI + SQLite)
+- [x] 后端原型搭建 (FastAPI + SQLite)
 - [ ] 前端原型搭建 (React + Vite + NES.css)
 - [ ] 前后端联调
 - [ ] 视觉与动画实现

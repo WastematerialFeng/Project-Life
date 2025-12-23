@@ -160,6 +160,8 @@ feat(backend): 添加用户属性系统 API
 | 2024-12-24 02:35 | 修改 | frontend/components/QuestLog.tsx | 空状态引导优化 |
 | 2024-12-24 02:35 | 修改 | frontend/App.tsx | 行动区分离、商店诱饵、漂浮数字 |
 | 2024-12-24 02:35 | 创建 | frontend/components/FloatingText.tsx | 漂浮数字组件 |
+| 2024-12-24 02:54 | 创建 | frontend/services/api.ts | 后端API服务层 |
+| 2024-12-24 02:54 | 修改 | frontend/App.tsx | 前后端联调集成 |
 
 ---
 

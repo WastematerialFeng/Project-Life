@@ -4,22 +4,122 @@ import StatusHUD from './components/StatusHUD';
 import QuestLog from './components/QuestLog';
 import { FloatingTextManager, useFloatingText } from './components/FloatingText';
 import { UserState, Quest, UserStatus, Difficulty, QuestType } from './types';
-import { INITIAL_USER_STATE, MAX_HP, MAX_SP } from './constants';
-import { generateQuestsFromGoal } from './services/geminiService';
+import { INITIAL_USER_STATE } from './constants';
+import * as api from './services/api';
 
 const App: React.FC = () => {
   // --- Global State ---
   const [user, setUser] = useState<UserState>(INITIAL_USER_STATE);
+  const [userId, setUserId] = useState<number | null>(null);
   const [quests, setQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(false);
   const [showCriticalOverlay, setShowCriticalOverlay] = useState(false);
   const [senzuCount, setSenzuCount] = useState(3);
+  const [initialized, setInitialized] = useState(false);
   
   // Floating text hook
   const { texts, addFloatingText } = useFloatingText();
   
   // Refs for floating text positions
   const avatarRef = useRef<HTMLDivElement>(null);
+
+  // --- Initialize: Create or load user ---
+  useEffect(() => {
+    const initUser = async () => {
+      try {
+        // Try to get existing user or create new one
+        const savedUserId = localStorage.getItem('projectlife_user_id');
+        let userData: api.UserData;
+        
+        if (savedUserId) {
+          try {
+            userData = await api.getUser(parseInt(savedUserId));
+            setUserId(parseInt(savedUserId));
+          } catch {
+            // User not found, create new
+            userData = await api.createUser('孙悟空');
+            localStorage.setItem('projectlife_user_id', userData.id.toString());
+            setUserId(userData.id);
+          }
+        } else {
+          userData = await api.createUser('孙悟空');
+          localStorage.setItem('projectlife_user_id', userData.id.toString());
+          setUserId(userData.id);
+        }
+        
+        // Map backend data to frontend state
+        setUser({
+          name: userData.username,
+          level: userData.level,
+          currentExp: userData.current_exp,
+          maxExp: userData.max_exp,
+          hp: userData.hp,
+          maxHp: userData.max_hp,
+          sp: userData.sp,
+          maxSp: userData.max_sp,
+          gold: userData.gold,
+          status: userData.status as UserStatus
+        });
+        
+        // Init items
+        await api.initItems();
+        setInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize:', error);
+        setInitialized(true); // Continue with local state
+      }
+    };
+    
+    initUser();
+  }, []);
+
+  // --- Load quests when user is ready ---
+  useEffect(() => {
+    const loadQuests = async () => {
+      if (!userId) return;
+      try {
+        const questsData = await api.getUserQuests(userId);
+        const mappedQuests: Quest[] = questsData.map(q => ({
+          id: q.id.toString(),
+          title: q.title,
+          desc: q.description,
+          difficulty: mapDifficulty(q.difficulty),
+          type: mapQuestType(q.quest_type),
+          spCost: q.sp_cost,
+          rewardGold: q.reward_gold,
+          rewardExp: q.reward_exp,
+          isCompleted: q.is_completed,
+          isVisible: q.is_visible,
+          step: q.step_order
+        }));
+        setQuests(mappedQuests);
+      } catch (error) {
+        console.error('Failed to load quests:', error);
+      }
+    };
+    
+    loadQuests();
+  }, [userId]);
+
+  // Helper functions to map backend enums to frontend
+  const mapDifficulty = (diff: string): Difficulty => {
+    const map: Record<string, Difficulty> = {
+      'EASY': Difficulty.EASY,
+      'NORMAL': Difficulty.MEDIUM,
+      'HARD': Difficulty.HARD,
+      'EPIC': Difficulty.EPIC
+    };
+    return map[diff] || Difficulty.MEDIUM;
+  };
+
+  const mapQuestType = (type: string): QuestType => {
+    const map: Record<string, QuestType> = {
+      'MAIN': QuestType.MAIN,
+      'SIDE': QuestType.SIDE,
+      'DAILY': QuestType.DAILY
+    };
+    return map[type] || QuestType.MAIN;
+  };
 
   // --- Derived State Logic ---
   const updateStatus = useCallback((currentHp: number, currentSp: number) => {
@@ -59,18 +159,43 @@ const App: React.FC = () => {
     }
   };
 
-  const handleRest = () => {
-    const hpGain = Math.min(50, user.maxHp - user.hp);
-    const spGain = Math.min(30, user.maxSp - user.sp);
+  const handleRest = async () => {
+    if (!userId) return;
     
-    setUser(prev => ({
+    try {
+      const result = await api.userRest(userId);
+      showFloatingText(`+${result.hp_restored} HP`, '#ef4444');
+      if (result.sp_restored > 0) {
+        setTimeout(() => showFloatingText(`+${result.sp_restored} SP`, '#3b82f6'), 200);
+      }
+      
+      // Refresh user data
+      const userData = await api.getUser(userId);
+      setUser({
+        name: userData.username,
+        level: userData.level,
+        currentExp: userData.current_exp,
+        maxExp: userData.max_exp,
+        hp: userData.hp,
+        maxHp: userData.max_hp,
+        sp: userData.sp,
+        maxSp: userData.max_sp,
+        gold: userData.gold,
+        status: userData.status as UserStatus
+      });
+    } catch (error) {
+      console.error('Rest failed:', error);
+      // Fallback to local
+      const hpGain = Math.min(50, user.maxHp - user.hp);
+      const spGain = Math.min(30, user.maxSp - user.sp);
+      setUser(prev => ({
         ...prev,
         hp: Math.min(prev.hp + 50, prev.maxHp),
         sp: Math.min(prev.sp + 30, prev.maxSp)
-    }));
-    
-    if (hpGain > 0) showFloatingText(`+${hpGain} HP`, '#ef4444');
-    if (spGain > 0) showFloatingText(`+${spGain} SP`, '#3b82f6');
+      }));
+      if (hpGain > 0) showFloatingText(`+${hpGain} HP`, '#ef4444');
+      if (spGain > 0) showFloatingText(`+${spGain} SP`, '#3b82f6');
+    }
   };
 
   const handleMeditate = () => {
@@ -98,100 +223,106 @@ const App: React.FC = () => {
   };
 
   const handleGenerateQuests = async (goalText: string) => {
+      if (!userId) return;
       setLoading(true);
       try {
-          const generatedSteps = await generateQuestsFromGoal(goalText);
+          // Use backend API to generate quests
+          const generatedSteps = await api.generateQuests(goalText);
           
-          const newQuests: Quest[] = generatedSteps.map((step, index) => {
-              // Simple heuristic to calculate rewards based on difficulty
-              let baseGold = 10;
-              let baseExp = 10;
-              if (step.difficulty === '普通') { baseGold = 30; baseExp = 30; }
-              if (step.difficulty === '困难') { baseGold = 80; baseExp = 80; }
-              if (step.difficulty === '史诗') { baseGold = 200; baseExp = 200; }
-              
-              // Map incoming difficulty string to enum if needed, or assume prompt returns exact matches
-              // Since we updated prompt to output "简单" etc., it should match.
-              
-              return {
-                  id: Date.now().toString() + index,
-                  title: step.title,
-                  desc: step.desc,
-                  difficulty: step.difficulty as Difficulty,
-                  type: QuestType.MAIN,
-                  spCost: step.sp_cost,
-                  rewardGold: baseGold,
-                  rewardExp: baseExp,
-                  isCompleted: false,
-                  isVisible: index === 0, // Fog of War: Only first is visible
-                  step: step.step
-              };
-          });
-
-          setQuests(prev => [...prev, ...newQuests]);
+          // Create quests in backend
+          for (let i = 0; i < generatedSteps.length; i++) {
+            const step = generatedSteps[i];
+            let baseGold = 10, baseExp = 10;
+            if (step.difficulty === 'NORMAL') { baseGold = 30; baseExp = 30; }
+            if (step.difficulty === 'HARD') { baseGold = 80; baseExp = 80; }
+            if (step.difficulty === 'EPIC') { baseGold = 200; baseExp = 200; }
+            
+            await api.createQuest(userId, {
+              title: step.title,
+              description: step.desc,
+              difficulty: step.difficulty,
+              quest_type: step.type,
+              reward_gold: baseGold,
+              reward_exp: baseExp,
+              sp_cost: step.sp_cost
+            });
+          }
+          
+          // Reload quests from backend
+          const questsData = await api.getUserQuests(userId);
+          const mappedQuests: Quest[] = questsData.map(q => ({
+            id: q.id.toString(),
+            title: q.title,
+            desc: q.description,
+            difficulty: mapDifficulty(q.difficulty),
+            type: mapQuestType(q.quest_type),
+            spCost: q.sp_cost,
+            rewardGold: q.reward_gold,
+            rewardExp: q.reward_exp,
+            isCompleted: q.is_completed,
+            isVisible: q.is_visible,
+            step: q.step_order
+          }));
+          setQuests(mappedQuests);
+      } catch (error) {
+          console.error('Generate quests failed:', error);
       } finally {
           setLoading(false);
       }
   };
 
-  const handleCompleteQuest = (questId: string) => {
-      if (user.hp <= 0) return; // Prevent action if dead
+  const handleCompleteQuest = async (questId: string) => {
+      if (user.hp <= 0) return;
 
-      const questIndex = quests.findIndex(q => q.id === questId);
-      if (questIndex === -1) return;
-      const quest = quests[questIndex];
+      const quest = quests.find(q => q.id === questId);
+      if (!quest) return;
 
-      if (user.sp < quest.spCost) {
-          alert("元气不足，无法完成此修行！请冥想或休息。");
-          return;
+      try {
+        const result = await api.completeQuest(parseInt(questId));
+        
+        // Show floating text feedback
+        showFloatingText(`+${result.gold_earned} Z`, '#fbbf24');
+        setTimeout(() => showFloatingText(`+${result.exp_earned} EXP`, '#a855f7'), 200);
+        
+        if (result.level_up && result.new_level) {
+          setTimeout(() => showFloatingText(`升级! Lv.${result.new_level}`, '#22c55e'), 400);
+        }
+        
+        // Refresh user and quests from backend
+        if (userId) {
+          const userData = await api.getUser(userId);
+          setUser({
+            name: userData.username,
+            level: userData.level,
+            currentExp: userData.current_exp,
+            maxExp: userData.max_exp,
+            hp: userData.hp,
+            maxHp: userData.max_hp,
+            sp: userData.sp,
+            maxSp: userData.max_sp,
+            gold: userData.gold,
+            status: userData.status as UserStatus
+          });
+          
+          const questsData = await api.getUserQuests(userId);
+          const mappedQuests: Quest[] = questsData.map(q => ({
+            id: q.id.toString(),
+            title: q.title,
+            desc: q.description,
+            difficulty: mapDifficulty(q.difficulty),
+            type: mapQuestType(q.quest_type),
+            spCost: q.sp_cost,
+            rewardGold: q.reward_gold,
+            rewardExp: q.reward_exp,
+            isCompleted: q.is_completed,
+            isVisible: q.is_visible,
+            step: q.step_order
+          }));
+          setQuests(mappedQuests);
+        }
+      } catch (error: any) {
+        alert(error.message || '完成任务失败');
       }
-
-      // Update User
-      setUser(prev => {
-          const newSp = prev.sp - quest.spCost;
-          const newExp = prev.currentExp + quest.rewardExp;
-          const newGold = prev.gold + quest.rewardGold;
-          
-          // Level Up Logic (Simple)
-          let newLevel = prev.level;
-          let newMaxExp = prev.maxExp;
-          let tempExp = newExp;
-          
-          if (tempExp >= prev.maxExp) {
-              newLevel += 1;
-              tempExp = tempExp - prev.maxExp;
-              newMaxExp = Math.floor(prev.maxExp * 1.2);
-          }
-
-          return {
-              ...prev,
-              sp: Math.max(0, newSp),
-              currentExp: tempExp,
-              maxExp: newMaxExp,
-              gold: newGold,
-              level: newLevel
-          };
-      });
-      
-      // Show floating text feedback
-      showFloatingText(`+${quest.rewardGold} Z`, '#fbbf24');
-      setTimeout(() => showFloatingText(`+${quest.rewardExp} EXP`, '#a855f7'), 200);
-
-      // Update Quests (Mark complete + Reveal next)
-      setQuests(prev => {
-          const updated = [...prev];
-          updated[questIndex] = { ...updated[questIndex], isCompleted: true };
-          
-          // Reveal next step if it exists in the same chain (based on order in array for now)
-          // In a robust system we'd use parentQuestId, here we assume linear generation added to end
-          // Simple logic: If there is a quest with step === current.step + 1 that is currently hidden
-          const nextStepIndex = updated.findIndex(q => q.step === (quest.step || 0) + 1 && !q.isVisible && !q.isCompleted);
-          if (nextStepIndex !== -1) {
-              updated[nextStepIndex] = { ...updated[nextStepIndex], isVisible: true };
-          }
-
-          return updated;
-      });
   };
 
   return (

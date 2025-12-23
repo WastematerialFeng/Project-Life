@@ -79,11 +79,21 @@
 - 分析 PRD 并制定三周开发计划
 - 初始化 Git 仓库并连接远程
 - 创建 TECH_SPEC.md 和 claude.md
+- 完成后端 FastAPI + SQLite 搭建
+- 整合前端 React + Vite 项目
+- 前端视觉与交互优化
+
+**Git 提交记录：**
+| Commit ID | 时间 | 说明 |
+|-----------|------|------|
+| ed94880 | 2024-12-24 02:00 | docs: 初始化项目文档 |
+| 9eae287 | 2024-12-24 02:08 | feat(backend): 搭建FastAPI后端原型 |
+| d75193e | 2024-12-24 02:15 | feat(frontend): 整合前端项目 |
+| (待提交) | 2024-12-24 02:35 | feat(frontend): 前端视觉与交互优化 |
 
 **下一步计划：**
-- Day 1: 搭建 FastAPI + SQLite 环境
-- 创建 User, Quest, Inventory 数据模型
-- 实现基础 CRUD API
+- 根据用户反馈继续优化前端
+- 前后端联调
 
 ---
 

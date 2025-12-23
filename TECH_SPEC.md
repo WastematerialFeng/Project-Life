@@ -154,6 +154,12 @@ feat(backend): 添加用户属性系统 API
 | 2024-12-24 02:15 | 创建 | frontend/App.tsx | React 主应用 |
 | 2024-12-24 02:15 | 创建 | frontend/components/ | UI 组件 (Avatar, StatusHUD, QuestLog, Oracle) |
 | 2024-12-24 02:15 | 创建 | frontend/services/ | Gemini AI 服务 |
+| 2024-12-24 02:35 | 修改 | frontend/index.html | 增强CSS动画效果 |
+| 2024-12-24 02:35 | 修改 | frontend/constants.ts | 替换像素风头像 |
+| 2024-12-24 02:35 | 修改 | frontend/components/StatusHUD.tsx | 添加图标、经验条优化 |
+| 2024-12-24 02:35 | 修改 | frontend/components/QuestLog.tsx | 空状态引导优化 |
+| 2024-12-24 02:35 | 修改 | frontend/App.tsx | 行动区分离、商店诱饵、漂浮数字 |
+| 2024-12-24 02:35 | 创建 | frontend/components/FloatingText.tsx | 漂浮数字组件 |
 
 ---
 

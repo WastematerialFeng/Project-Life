@@ -16,11 +16,11 @@ export const INITIAL_USER_STATE = {
     status: UserStatus.NORMAL // Will be derived dynamically
 };
 
-// Placeholder images for avatar states
+// Placeholder images for avatar states - 使用像素风格头像
 export const AVATAR_IMAGES = {
-    NORMAL: "https://picsum.photos/id/1005/200/200", // Man looking calm
-    SSJ: "https://picsum.photos/id/1040/200/200", // High energy (castle/gold tone)
-    EXHAUSTED: "https://picsum.photos/id/1025/200/200", // Pug/Tired looking or low contrast
+    NORMAL: "https://api.dicebear.com/7.x/pixel-art/svg?seed=goku&backgroundColor=212529",
+    SSJ: "https://api.dicebear.com/7.x/pixel-art/svg?seed=goku-ssj&backgroundColor=ffd700&hair=short01",
+    EXHAUSTED: "https://api.dicebear.com/7.x/pixel-art/svg?seed=goku-tired&backgroundColor=666666",
 };
 
 export const SYSTEM_PROMPT = `

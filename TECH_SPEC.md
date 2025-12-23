@@ -150,6 +150,10 @@ feat(backend): 添加用户属性系统 API
 | 2024-12-24 02:08 | 创建 | backend/schemas.py | Pydantic 数据模式 |
 | 2024-12-24 02:08 | 创建 | backend/database.py | 数据库配置 |
 | 2024-12-24 02:08 | 创建 | backend/requirements.txt | Python 依赖 |
+| 2024-12-24 02:15 | 创建 | frontend/ | 前端项目结构 |
+| 2024-12-24 02:15 | 创建 | frontend/App.tsx | React 主应用 |
+| 2024-12-24 02:15 | 创建 | frontend/components/ | UI 组件 (Avatar, StatusHUD, QuestLog, Oracle) |
+| 2024-12-24 02:15 | 创建 | frontend/services/ | Gemini AI 服务 |
 
 ---
 

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Life: 赛亚人崛起篇</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- NES.css for 8-bit aesthetic -->
+    <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
+    <!-- Press Start 2P Font -->
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+    <style>
+      body {
+        /* Added fallback for Chinese characters */
+        font-family: 'Press Start 2P', 'Microsoft YaHei', 'SimHei', sans-serif;
+        background-color: #212529; /* Dark background */
+        color: #fff;
+      }
+      
+      /* Custom Animations */
+      @keyframes glow {
+        0% { box-shadow: 0 0 5px #ffd700; }
+        50% { box-shadow: 0 0 20px #ff4500, 0 0 10px #ffd700; }
+        100% { box-shadow: 0 0 5px #ffd700; }
+      }
+      
+      @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        10% { transform: translate(-1px, -2px) rotate(-1deg); }
+        20% { transform: translate(-3px, 0px) rotate(1deg); }
+        30% { transform: translate(3px, 2px) rotate(0deg); }
+        40% { transform: translate(1px, -1px) rotate(1deg); }
+        50% { transform: translate(-1px, 2px) rotate(-1deg); }
+        60% { transform: translate(-3px, 1px) rotate(0deg); }
+        70% { transform: translate(3px, 1px) rotate(-1deg); }
+        80% { transform: translate(-1px, -1px) rotate(1deg); }
+        90% { transform: translate(1px, 2px) rotate(0deg); }
+        100% { transform: translate(1px, -2px) rotate(-1deg); }
+      }
+
+      .ssj-glow {
+        animation: glow 1.5s infinite alternate;
+        border: 4px solid #ffd700;
+      }
+
+      .exhausted-shake {
+        animation: shake 0.5s;
+        animation-iteration-count: infinite;
+        filter: grayscale(100%) contrast(120%);
+      }
+
+      /* Custom scrollbar for pixel feel */
+      ::-webkit-scrollbar {
+        width: 16px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #212529; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d3d3d3; 
+        border: 4px solid #212529;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

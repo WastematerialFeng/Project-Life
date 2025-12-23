@@ -24,7 +24,7 @@
 - [x] 技术规范文档创建
 - [x] claude.md 上下文文档创建
 - [x] 后端原型搭建 (FastAPI + SQLite)
-- [ ] 前端原型搭建 (React + Vite + NES.css)
+- [x] 前端原型搭建 (React + Vite + NES.css)
 - [ ] 前后端联调
 - [ ] 视觉与动画实现
 - [ ] AI 任务拆解功能
